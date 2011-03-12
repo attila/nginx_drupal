@@ -1,0 +1,11 @@
+##
+## Generic rules for staging sites.
+##
+
+include rules_generic;
+
+## Serve a restrictive robots.txt.
+location = /robots.txt {
+  root        /srv/www/00_default/public;
+  access_log  off;
+}

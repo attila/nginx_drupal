@@ -1,0 +1,76 @@
+charset utf-8;
+
+## Search for already compressed files
+gzip_static on;
+gzip on;
+
+## Some images have no mime type.
+default_type image/jpeg;
+
+## Buffers definition. allows of up to 260k to be passed in memory.
+client_body_buffer_size 1m;
+proxy_buffering on;
+proxy_buffer_size 4k;
+proxy_buffers 8 32k;
+
+## 404 generated from php can be slow. Uncomment only if needed.
+#error_page  404              /index.php;
+error_page  404              /404.html;
+error_page  500 502 503 504  /50x.html;
+
+## Deny access to Drupal backup_migrate files.
+location ~ ^/sites/(.*)/backup_migrate/(.*)\.((my|pg)sql|bz|gz)$ {
+  deny all;
+}
+
+## This is mostly based on Drupal's stock .htaccess
+location ~* ^.+(\.(txt|engine|inc|info|install|module|profile|po|sh|.*sql|theme|tpl(\.php)?|xtmpl)|code-style\.pl|/Entries.*|/Repository|/Root|/Tag|/Template)$ {
+  return 404;
+}
+
+## Serve imagecache files directly or redirect to drupal if they do not exist.
+location ~* /files/imagecache {
+  access_log off;
+  expires max;
+  try_files $uri @drupal;
+}
+## Drupal 7 image style
+location ~* image/generate {
+  access_log off;
+  expires 30d;
+  try_files $uri @drupal;
+}
+
+## Serve advagg css/js files directly or redirect to drupal if they do not exist.
+location ~* /files/advagg_(css|js) {
+  access_log off;
+  expires max;
+  try_files $uri @drupal;
+}
+
+## Serve main feed (adjust further feeds if needed)
+location = /rss.xml {
+  try_files $uri @drupal;
+}
+
+## Serve the rest of static files directly.
+location ~* ^.+\.(jpe?g|gif|png|mng|css|js|ico|xml|swf|flv|svg|svgz)$ {
+  access_log  off;
+  expires     max;
+  #add_header X-Header "Debug: static content";
+}
+
+## Serve fonts directly and with specific headers.
+location ~* ^.+\.(woff|otf|ttf|eot)$ {
+  access_log  off;
+  add_header  Access-Control-Allow-Origin *;
+  expires     max;
+}
+
+## Rewrite the rest of requests for PHP processing.
+location @drupal {
+  index index.php;
+  if (!-e $request_filename) {
+    rewrite ^/(.*)$ /index.php?q=$1 last;
+  }
+}

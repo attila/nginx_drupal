@@ -1,0 +1,42 @@
+include drupal/drupal_common;
+
+location / {
+  try_files $uri @cache;
+}
+
+## This will try to see if we have a boost file in place.
+location @cache {
+  # queries, drupal cookies, or not GET methods, all require PHP processing.
+  if ($query_string ~ ".+") {
+    return 405;
+  }
+  if ($http_cookie ~ "DRUPAL_UID" ) {
+    return 405;
+  }
+  if ($request_method !~ ^(GET|HEAD)$ ) {
+    return 405;
+  }
+  error_page 405 = @drupal;
+
+  add_header Expires "Tue, 2 Feb 1978 13:30:00 GMT";
+  add_header X-Header "Boosted!";
+  add_header Cache-Control "must-revalidate, post-check=0, pre-check=0";
+  try_files /cache/normal/$host/${uri}_.html /cache/perm/$host/${uri}_.css /cache/perm/$host/${uri}_.js /cache/$host/0$uri.html /cache/$host/0${uri}/index.html @drupal;
+}
+
+## Only a few php files are allowed.
+location ~* ^/(index|boost_stats|cron|xmlrpc).php$ {
+  include php53-fpm;
+}
+
+## Internal pages are protected with a simple htpasswd.
+location ~* ^/(authorize|install|update|memcached|apc|info).php$ {
+  auth_basic "Restricted Area";
+  auth_basic_user_file htpasswd;
+  include php53-fpm;
+}
+
+## Deny all the rest php requests.
+location ~* ^.+\.php$ {
+  return 404;
+}

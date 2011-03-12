@@ -1,0 +1,23 @@
+## Consider only imagecache and advagg dynamic requests
+location = /index.php {
+  if ($arg_q !~ files/(imagecache|advagg_(css|js))) {
+    return 404;
+  }
+  include php53-fpm;
+}
+
+location ~* ^/(apc|info).php$ {
+  auth_basic "Restricted Area";
+  auth_basic_user_file htpasswd;
+  include php53-fpm;
+}
+
+location ~* ^.+\.php$ {
+  return 404;
+}
+
+error_page 404 = @empty;
+
+location @empty {
+  empty_gif;
+}

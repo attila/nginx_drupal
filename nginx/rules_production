@@ -1,0 +1,11 @@
+##
+## Generic rules for production sites.
+##
+
+include rules_generic;
+
+# robots.txt is important, but skip logging its access.
+location = /robots.txt {
+  access_log off;
+  log_not_found off;
+}

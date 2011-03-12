@@ -1,0 +1,33 @@
+##
+## Generic rules useful to all sites. Adjust them as needed.
+##
+
+# Masquerade version control directories.
+location ~ (/|)(\.git|\.bzr) {
+  return 404;
+}
+# Deny some crawlers.
+if ($http_user_agent ~* (HTTrack|HTMLParser|CaSpEr) ) {
+  return 444;
+}
+# Deny certain referers.
+if ($http_referer ~* (gambling|porn|sex|poker) ) {
+  return 444;
+}
+# Serve favicon.ico only if it exists.
+location = /favicon.ico {
+  access_log     off;
+  log_not_found  off;
+  if (!-e $request_filename) {
+    return 204;
+  }
+}
+# Deny access to .htaccess/.htpasswd files.
+location ~ ^/\.ht {
+  access_log off;
+  return 404;
+}
+# Set error page location.
+location ~* /(404|50x)\.html$ {
+  root   /srv/www/00_default/public;
+}
