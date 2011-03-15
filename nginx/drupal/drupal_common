@@ -14,8 +14,8 @@ proxy_buffer_size 4k;
 proxy_buffers 8 32k;
 
 ## 404 generated from php can be slow. Uncomment only if needed.
-#error_page  404              /index.php;
 error_page  404              /404.html;
+error_page  406              @hotlink;
 error_page  500 502 503 504  /50x.html;
 
 ## Deny access to Drupal backup_migrate files.
@@ -32,12 +32,18 @@ location ~* ^.+(\.(txt|engine|inc|info|install|module|profile|po|sh|.*sql|theme|
 location ~* /files/imagecache {
   access_log off;
   expires max;
+  if ($invalid_referer) {
+    return 406;
+  }
   try_files $uri @drupal;
 }
 ## Drupal 7 image style
 location ~* image/generate {
   access_log off;
   expires 30d;
+  if ($invalid_referer) {
+    return 406;
+  }
   try_files $uri @drupal;
 }
 
@@ -57,7 +63,9 @@ location = /rss.xml {
 location ~* ^.+\.(jpe?g|gif|png|mng|css|js|ico|xml|swf|flv|svg|svgz)$ {
   access_log  off;
   expires     max;
-  #add_header X-Header "Debug: static content";
+  if ($invalid_referer) {
+    return 406;
+  }
 }
 
 ## Serve fonts directly and with specific headers.
@@ -65,6 +73,9 @@ location ~* ^.+\.(woff|otf|ttf|eot)$ {
   access_log  off;
   add_header  Access-Control-Allow-Origin *;
   expires     max;
+  if ($invalid_referer) {
+    return 406;
+  }
 }
 
 ## Rewrite the rest of requests for PHP processing.
@@ -73,4 +84,10 @@ location @drupal {
   if (!-e $request_filename) {
     rewrite ^/(.*)$ /index.php?q=$1 last;
   }
+}
+
+# Hotlinkers' endpoint. Set valid_referers in vhost to activate.
+location @hotlink {
+  access_log off;
+  deny all;
 }

@@ -2,7 +2,7 @@
 ## Default server and localhost
 ##
 server {
-  listen       172.22.1.7:80 default;
+  listen       80 default;
   server_name  _;
   access_log   /srv/www/00_default/log/access.log main;
   error_log    /srv/www/00_default/log/error.log warn;
@@ -55,7 +55,7 @@ server {
     deny  all;
   }
 
-  location ~* ^/(status|ping|apc|xcache)\.php {
+  location ~* ^/(status|ping|apc|munin_xcache)\.php {
     root  /srv/www/localhost/public;
     access_log off;
     allow 127.0.0.1;
@@ -65,4 +65,3 @@ server {
 
   include nginx_status;
 }
-

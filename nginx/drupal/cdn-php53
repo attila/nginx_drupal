@@ -1,4 +1,11 @@
-## Consider only imagecache and advagg dynamic requests
+include drupal/drupal_common;
+
+## Send invalid referers where they belong.
+if ($invalid_referer) {
+  return 406;
+}
+
+## Consider only imagecache and advagg dynamic requests.
 location = /index.php {
   if ($arg_q !~ files/(imagecache|advagg_(css|js))) {
     return 404;
