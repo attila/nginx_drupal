@@ -4,8 +4,8 @@
 server {
   listen       80 default;
   server_name  _;
-  access_log   /srv/www/00_default/log/access.log main;
-  error_log    /srv/www/00_default/log/error.log warn;
+  access_log   /srv/www/00_default/default/log/access.log main;
+  error_log    /srv/www/00_default/default/log/error.log warn;
   limit_conn   gulag 10;
 
   server_name_in_redirect  off;
@@ -24,11 +24,11 @@ server {
 server {
   listen       127.0.0.1:80;
   server_name  localhost;
-  access_log   /srv/www/localhost/log/access.log main;
-  error_log    /srv/www/localhost/log/error.log warn;
+  access_log   /srv/www/00_default/localhost/log/access.log main;
+  error_log    /srv/www/00_default/localhost/log/error.log warn;
 
   location / {
-    root       /srv/www/localhost;
+    root       /srv/www/localhost/public;
     index      index.php index.html;
     include    php53-fpm;
   }
@@ -48,7 +48,7 @@ server {
   error_page 404  /404.html;
   error_page 500 502 503 504  /50x.html;
   location ~* ^/(404|50x)\.html {
-    root /srv/www/00_default/public;
+    root /srv/www/00_default/default/public;
   }
 
   location ~ /\.ht {
@@ -56,7 +56,7 @@ server {
   }
 
   location ~* ^/(status|ping|apc|munin_xcache)\.php {
-    root  /srv/www/localhost/public;
+    root  /srv/www/00_default/localhost/public;
     access_log off;
     allow 127.0.0.1;
     deny all;

@@ -7,7 +7,7 @@ location / {
 ## This will try to see if we have a boost file in place.
 location @cache {
   # queries, drupal cookies, or not GET methods, all require PHP processing.
-  if ($query_string ~ ".+") {
+  if ($query_string ~ "nocache") {
     return 405;
   }
   if ($http_cookie ~ "DRUPAL_UID" ) {
